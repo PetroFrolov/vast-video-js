@@ -1,4 +1,13 @@
-vast-video-js
-=============
+VAST-ad for VideoJS
+=====================
 
-VAST-Ad plugin for HTML5 by video.js
+# About
+VAST-Ad plugin for HTML5 by VideoJS player.
+
+# Status
+Currently in developer use
+
+# Usage
+See examples/index.html. You should change all paths to real values.
+
+

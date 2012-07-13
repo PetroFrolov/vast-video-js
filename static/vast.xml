@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<VAST version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Ad id="1">
+	<InLine>
+	    <AdSystem></AdSystem>
+	    <AdTitle></AdTitle>
+	    <Impression>
+	         <![CDATA[staic/clear_dot.gif?0]]>
+	    </Impression>
+	    <Creatives>
+		<Creative>
+		    <Linear>
+			<Duration>00:00:30</Duration>
+			<MediaFiles>
+			    <MediaFile delivery="progressive" type="video/mp4" scalable="true" width="" height="">
+				<![CDATA[static/pepsi_vs_coca.mp4]]>
+			    </MediaFile>
+			    <MediaFile delivery="progressive" type="video/webm" scalable="true" width="" height="">
+				<![CDATA[static/pepsi_vs_coca.webm]]>
+			    </MediaFile>
+			</MediaFiles>
+<TrackingEvents>
+<Tracking event="creativeView"><![CDATA[static/clear_dot.gif?1]]></Tracking>
+<Tracking event="start"><![CDATA[static/clear_dot.gif?2]]></Tracking>
+<Tracking event="midpoint"><![CDATA[static/clear_dot.gif?3]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[static?clear_dot.gif?4]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[static/clear_dot.gif?5]]></Tracking>
+<Tracking event="complete"><![CDATA[static/clear_dot.gif?6]]></Tracking>
+<Tracking event="skip"><![CDATA[static/clear_dot.gif?7]]></Tracking>
+<Tracking event="mute"><![CDATA[static/clear_dot.gif?8]]></Tracking>
+<Tracking event="unmute"><![CDATA[static/clear_dot.gif?9]]></Tracking>
+<Tracking event="pause"><![CDATA[static/clear_dot.gif?10]]></Tracking>
+<Tracking event="rewind"><![CDATA[static/clear_dot.gif?11]]></Tracking>
+<Tracking event="resume"><![CDATA[static/clear_dot.gif?12]]></Tracking>
+<Tracking event="fullscreen"><![CDATA[static/clear_dot.gif?13]]></Tracking>
+<Tracking event="expand"><![CDATA[static/clear_dot.gif?14]]></Tracking>
+<Tracking event="collapse"><![CDATA[static/clear_dot.gif?15]]></Tracking>
+<Tracking event="acceptInvitation"><![CDATA[static/clear_dot.gif?16]]></Tracking>
+<Tracking event="close"><![CDATA[static/clear_dot.gif?17]]></Tracking>
+</TrackingEvents>
+			<VideoClicks>
+			    <ClickThrough>
+			         <![CDATA[http://medialand.ru/]]>
+			    </ClickThrough>
+			    <ClickTracking>
+				<![CDATA[static/clear_dot.gif?20]]
+			    </ClickTracking>
+			</VideoClicks>
+		    </Linear>
+		</Creative>
+	    </Creatives>
+	</InLine>
+    </Ad>
+    <Ad id="2">
+	<InLine>
+	    <AdSystem></AdSystem>
+	    <AdTitle></AdTitle>
+	    <Impression>
+	         <![CDATA[staic/clear_dot.gif?0]]>
+	    </Impression>
+	    <Creatives>
+		<Creative>
+		    <Linear>
+			<Duration>00:00:30</Duration>
+			<MediaFiles>
+			    <MediaFile delivery="progressive" type="video/mp4" scalable="true" width="" height="">
+				<![CDATA[static/pepsi_vs_coca.mp4]]>
+			    </MediaFile>
+			    <MediaFile delivery="progressive" type="video/webm" scalable="true" width="" height="">
+				<![CDATA[static/pepsi_vs_coca.webm]]>
+			    </MediaFile>
+			</MediaFiles>
+<TrackingEvents>
+<Tracking event="creativeView"><![CDATA[static/clear_dot.gif?1]]></Tracking>
+<Tracking event="start"><![CDATA[static/clear_dot.gif?2]]></Tracking>
+<Tracking event="midpoint"><![CDATA[static/clear_dot.gif?3]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[static?clear_dot.gif?4]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[static/clear_dot.gif?5]]></Tracking>
+<Tracking event="complete"><![CDATA[static/clear_dot.gif?6]]></Tracking>
+<Tracking event="skip"><![CDATA[static/clear_dot.gif?7]]></Tracking>
+<Tracking event="mute"><![CDATA[static/clear_dot.gif?8]]></Tracking>
+<Tracking event="unmute"><![CDATA[static/clear_dot.gif?9]]></Tracking>
+<Tracking event="pause"><![CDATA[static/clear_dot.gif?10]]></Tracking>
+<Tracking event="rewind"><![CDATA[static/clear_dot.gif?11]]></Tracking>
+<Tracking event="resume"><![CDATA[static/clear_dot.gif?12]]></Tracking>
+<Tracking event="fullscreen"><![CDATA[static/clear_dot.gif?13]]></Tracking>
+<Tracking event="expand"><![CDATA[static/clear_dot.gif?14]]></Tracking>
+<Tracking event="collapse"><![CDATA[static/clear_dot.gif?15]]></Tracking>
+<Tracking event="acceptInvitation"><![CDATA[static/clear_dot.gif?16]]></Tracking>
+<Tracking event="close"><![CDATA[static/clear_dot.gif?17]]></Tracking>
+</TrackingEvents>
+			<VideoClicks>
+			    <ClickThrough>
+			         <![CDATA[http://medialand.ru/]]>
+			    </ClickThrough>
+			    <ClickTracking>
+				<![CDATA[static/clear_dot.gif?20]]
+			    </ClickTracking>
+			</VideoClicks>
+		    </Linear>
+		</Creative>
+	    </Creatives>
+	</InLine>
+    </Ad>
+</VAST>

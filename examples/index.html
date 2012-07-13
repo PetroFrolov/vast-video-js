@@ -1,0 +1,42 @@
+<html><head>
+<link href="http://vjs.zencdn.net/c/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/c/video.js"></script>
+
+<link href="../plugin/vast.plugin.css" rel="stylesheet">
+<script src="../plugin/vast.plugin.js"></script>
+
+</head><body>
+
+<video id="video" class="video-js vjs-default-skin" controls
+  preload="auto" width="640" height="360"
+    data-setup="{}">
+    <source src="http://video-js.zencoder.com/oceans-clip.mp4" type='video/mp4'/>
+    <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' >
+</video>
+
+<script type="text/javascript">
+    _V_("video", {
+	ads: {
+	    'skipAd': {
+		'enabled': true,
+		'timeOut': 5
+	    },
+	    'servers'  : [
+		{
+		    'apiAddress': '../static/vast.xml'
+		    //'apiAddress' : 'http://some.domain/xdr-redirect/?http://some.domain/xml/vast.xml'
+		}
+	    ], 
+	    'schedule' : [
+		{
+		    'position' : 'pre-roll'
+		},
+		{
+		    'position' : 'post-roll'
+		}
+	    ]
+	}
+    });
+</script>
+
+</body></html>

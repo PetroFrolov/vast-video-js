@@ -1,0 +1,693 @@
+/*
+    support VAST for HTML5
+    by P.Frolov
+*/
+
+_V_.extend({
+  getXML: function (url, onSuccess, onError) {
+    // if (netscape.security.PrivilegeManager.enablePrivilege) {
+    //   netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+    // }
+
+    var local = (url.indexOf("file:") == 0 || (window.location.href.indexOf("file:") == 0 && url.indexOf("http:") == -1));
+
+    if (typeof XMLHttpRequest == "undefined") {
+      XMLHttpRequest = function () {
+        try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (f) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (g) {}
+        throw new Error("This browser does not support XMLHttpRequest.");
+      };
+    }
+
+    var request = new XMLHttpRequest();
+
+    try {
+      request.open("GET", url);
+    } catch(e) {
+      _V_.log("VideoJS XMLHttpRequest (open)", e);
+      // onError(e);
+      return false;
+    }
+
+    request.onreadystatechange = _V_.proxy(this, function () {
+      if (request.readyState == 4) {
+        if (request.status == 200 || local && request.status == 0) {
+          onSuccess(request.responseXML);
+        } else {
+          if (onError) {
+            onError();
+          }
+        }
+      }
+    });
+
+    try {
+      request.send();
+    } catch(e) {
+      _V_.log("VideoJS XMLHttpRequest (send)", e);
+      if (onError) {
+        onError(e);
+      }
+    }
+  }
+});
+
+// cross-domain request by postMesage
+_V_.options.components['xdr'] = {};
+
+_V_.Xdr = _V_.Component.extend({
+
+	init: function (player, options) {
+		this._super(player, options);
+		
+		with (this.el.style) {
+			visibility = 'hidden';
+			width = '0px';
+			height = '0px';
+		}
+	},
+
+	createElement: function (type, attrs) {
+		if (this.player.tech.el.localName === 'video') {
+			return document.createElement('iframe');
+		}
+		return document.createElement('span');
+	},
+
+	src : function (url) {
+		if (this.player.tech.el.localName !== 'video')
+			return;
+		
+		if (url && url.toUpperCase().indexOf('HTTP://') == 0) {
+			this.el.src = url;
+		}
+	}
+});
+
+_V_.options.components['skipAdButton'] = {};
+
+_V_.SkipAdButton = _V_.Button.extend({
+
+	init: function (player, options) {
+		this._super(player, options);
+		
+		this.fadeOut();
+	},
+
+	createElement: function (type, attrs) {
+		if(this.player.tech.el.localName === 'video') {
+			attrs = _V_.merge({
+				className: this.buildCSSClass(),
+				innerHTML: 'Skip Ad'
+			}, attrs); 
+			
+			return this._super(type, attrs);
+		}
+		return document.createElement('span');
+	},
+
+	buildCSSClass: function () {
+		return " vjs-skip-button ";
+	},
+
+	show : function () {
+		this.fadeIn();
+		this.player.addEvent("mouseover", this.proxy(this.fadeIn));
+		this.player.addEvent("mouseout", this.proxy(this.fadeOut));
+	},
+
+	hide : function () {
+		this.fadeOut();
+		this.player.removeEvent("mouseover", this.proxy(this.fadeIn));
+		this.player.removeEvent("mouseout", this.proxy(this.fadeOut));
+	},
+
+	onClick: function () {
+		if (this.player.vast)
+			this.player.vast.onSkip();
+	}
+});
+
+_V_.options.components['clickLink'] = {};
+
+_V_.ClickLink = _V_.Component.extend({
+
+	init: function (player, options) {
+		this._super(player, options);
+		
+		this.hide();
+	},
+
+	createElement: function (type, attrs) {
+		if(this.player.tech.el.localName === 'video') {
+			attrs = _V_.merge({
+				className: this.buildCSSClass(),
+				innerHTML: '<a href="#" target="_blank"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></a>'
+			}, attrs); 
+			
+			return this._super(type, attrs);
+		}
+		return document.createElement('span');
+	},
+
+	buildCSSClass: function () {
+		return " vjs-link ";
+	},
+
+	show: function () {
+		var _v = this.player.values;
+		if (_v.currentSlot && _v.currentSlot.link) {
+			this.el.innerHTML = '<a href="' + _v.currentSlot.link + '" target="_blank"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></a>';
+			this.el.style.display = 'block';
+			this.addClickEvent();
+		}
+	},
+
+	hide: function () {
+		this.el.style.display = 'none';
+	},
+
+	addClickEvent : function () {
+		var _v = this.player.values;
+		try {
+			var a = this.el.getElementsByTagName('a')[0];
+			if (window.addEventListener) {
+				a.addEventListener('click', _V_.proxy(this, this.onClick), false);
+			} else {
+				a.attachEvent('onclick', _V_.proxy(this, this.onClick));
+			}
+		} catch (e) {}
+	},
+
+	onClick: function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.clickEvents['skip'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	}
+});
+
+
+_V_.options.components['vast'] = {};
+
+_V_.Vast = _V_.Component.extend({
+
+	init: function (player, options) {
+		this._super(player, options);
+		this.initAds();
+		
+		this.el.style.display = 'none';
+	},
+	
+	createElement: function (type, attrs) {
+		if(this.player.tech.el.localName === 'video') {
+			return this._super(type, attrs);
+		}
+		return document.createElement('span');
+	},
+	
+	initAds : function () {
+		var options = this.player.options;
+		
+		if (!options.ads || 
+		    !options.ads.hasOwnProperty('schedule') || 
+		    !options.ads['schedule'].length ||
+		    !options.ads.hasOwnProperty('servers') ||
+		    !options.ads['servers'].length) {
+			return;
+		}
+		
+		var _v = this.player.values;
+		_v.tempTime = 0;
+		_v.adList = [];
+		_v.mainTrack = _v.src;
+		_v.currentSlot = null;
+		_v.skipAd = 0;
+		_v.src = '';
+		
+		try {
+		    if (options.ads.skipAd.enabled)
+			_v.skipAd = options.ads.skipAd.timeOut || 3;
+		} catch (e) {}
+		
+		//window.counterOfStreams = 0;
+		this.adsRequest(options.ads);
+	},
+
+	adSlot: function (_type,_time) {
+		var a = {};
+		a.type = _type;
+		a.time = _time;
+		a.source = "";
+		a.mime = "";
+		a.seen = false;
+		a.playOnce = true;
+		a.impression = [];
+		a.events = {};
+		a.link = "";
+		a.clickEvents = [];
+		a.isTimeEvents = 0;
+		
+		return a;
+	},
+
+	convertTimeFormat: function (hhmmss) {
+		var _time = hhmmss.substr(0,1)*3600+hhmmss.substr(3,2)*60+hhmmss.substr(6,2)*1;
+		return _time;
+	},
+
+	constructAdList: function (responseObj) {
+		var _v = this.player.values;
+		var video = document.createElement("video");
+		try {
+			var adElements = responseObj.getElementsByTagName("Ad");
+			var size = _v.adList.length;
+			for (var a = 0, al = adElements.length; a < al && size; ++a) {
+
+				try {
+					impression = adElements[a].getElementsByTagName("Impression");
+					for (var k = 0, kl = impression.length;k < kl; ++k) {
+						for (var l = 0, ll = impression[k].childNodes.length;l < ll; ++l) {
+							var data = impression[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							if (!data)
+								continue;
+							_v.adList[a].impression.push(data);
+						}
+					}
+				} catch (e) {}
+
+				try {
+					mediaFiles = adElements[a].getElementsByTagName("MediaFiles")[0];
+					mediaFile = mediaFiles.getElementsByTagName("MediaFile");
+
+					mediaFound:
+					for (var k = 0, kl = mediaFile.length; k < kl; ++k) {
+						try {
+							type = mediaFile[k].getAttribute('type').toLowerCase();
+							if (!video.canPlayType || !video.canPlayType(type).replace(/no/, ''))
+								continue;
+							for (var l = 0, ll = mediaFile[k].childNodes.length; l < ll; ++l) {
+								var data = mediaFile[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+								if (!data)
+									continue;
+								_v.adList[a].source = data;
+								_v.adList[a].mime = type;
+								break mediaFound;
+							}
+						} catch (e) {}
+					}
+				} catch (e) {}
+
+				try {
+					trackingEvents = adElements[a].getElementsByTagName("TrackingEvents")[0];
+					tracking = trackingEvents.getElementsByTagName("Tracking");
+					for (var k = 0, kl = tracking.length; k < kl; ++k) {
+						var event = tracking[k].getAttribute('event');
+						if (!event)
+							continue;
+						for (var l = 0, ll = tracking[k].childNodes.length; l < ll; ++l) {
+							var data = tracking[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							if (!data)
+								continue;
+							if (!_v.adList[a].events[event.toLowerCase()])
+								_v.adList[a].events[event.toLowerCase()] = [];
+							_v.adList[a].events[event.toLowerCase()].push(data);
+							break;
+						}
+					}
+				} catch (e) {}
+
+				try {
+					videoClicks = adElements[a].getElementsByTagName("VideoClicks")[0];
+					clickThrough = videoClicks.getElementsByTagName("ClickThrough")[0];
+					for (var k = 0, kl = clickThrough.childNodes.length; k < kl; ++k) {
+						var data = clickThrough.childNodes[k].data.replace(/^\s+/,'').replace(/\s+$/, '');
+						if (!data)
+							continue;
+						if (data.toUpperCase().indexOf('HTTP://') != 0 && data.toUpperCase().indexOf('HTTPS://') != 0)
+							continue;
+						_v.adList[a].link = data;
+						break;
+					}
+					clickTracking = videoClicks.getElementsByTagName("ClickTracking");
+					for (var k = 0, kl = clickTracking.length; k < kl; ++k) {
+						for (var l = 0, ll = clickTracking[k].childNodes.length; l < ll; ++l) {
+							var data = clickTracking[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							if (!data)
+								continue;
+							_v.adList[a].clickEvents.push(data);
+							break;
+						}
+					}
+				} catch (e) {}
+
+				if (_v.adList[a].source)
+					--size;
+			}
+			if (size)
+				_v.adList = _v.adList.slice(0, _v.adList.length - size);
+
+			this.player.addEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
+		} catch (e) {}
+	},
+
+	callEvent : function (url) {
+		var _v =  this.player.values;
+		if (url.toUpperCase().indexOf("HTTP://") == 0) {
+			var rnd = Math.round(Math.random()*100000);
+			imgHandle = document.createElement('img');
+			imgHandle.style.visibility = "hidden";
+			imgHandle.style.position = "absolute";
+			imgHandle.style.width = "0px";
+			imgHandle.style.height = "0px";
+			imgHandle.src = url + ((url.indexOf('?') > 0) ? '&' : '?') + 'r' + rnd + '=' + rnd;
+			_V_.insertFirst(imgHandle, this.player.el.parentNode);
+		}
+	},
+
+	xml2Doc : function (string) {
+		var message = "";
+		if (window.DOMParser) { // all browsers, except IE before version 9
+			var parser = new DOMParser();
+			try {
+				xmlDoc = parser.parseFromString (string, "text/xml");
+			} catch (e) {
+				// if text is not well-formed, 
+				// it raises an exception in IE from version 9
+				_V_.log("XML parsing error.");
+				return false;
+			};
+		} else {  // Internet Explorer before version 9
+			if (typeof (ActiveXObject) == "undefined") {
+				_V_.log("Cannot create XMLDocument object");
+				return false;
+			}
+			ids = ["Msxml2.DOMDocument.6.0", "Msxml2.DOMDocument.5.0", "Msxml2.DOMDocument.4.0", "Msxml2.DOMDocument.3.0", "MSXML2.DOMDocument", "MSXML.DOMDocument"];
+			for (var i = 0, il = ids.length; i < il; ++i) {
+				try {
+					xmlDoc = new ActiveXObject(ids[i]);
+					break;
+				} catch (e) {}
+			}
+			if (!xmlDoc) {
+				_V_.log("Cannot create XMLDocument object");
+				return false;
+			}
+			xmlDoc.loadXML(string);
+			
+			if (xmlDoc.parseError && xmlDoc.parseError.errorCode != 0) {
+				_V_.log("XML Parsing Error: " + xmlDoc.parseError.reason
+					  + " at line " + xmlDoc.parseError.line
+					  + " at position " + xmlDoc.parseError.linepos);
+				return false;
+			} else {
+				if (xmlDoc.documentElement) {
+					if (xmlDoc.documentElement.nodeName == "parsererror") {
+						_V_.log(xmlDoc.documentElement.childNodes[0].nodeValue);
+					}
+				} else {
+					_V_.log("XML Parsing Error!");
+				}
+			}
+		}
+		return xmlDoc;
+	},
+
+	adsReady : function (responseObj) {
+		this.constructAdList (responseObj);
+	},
+
+	adsError : function (error) {
+		var _v = this.player.values;
+		
+		if (!this.player.xdr)
+			return;
+		
+		if (window.addEventListener) {
+			window.addEventListener('message', _V_.proxy(this, this.adsXdrListener), false);
+		} else {
+			window.attachEvent('onmessage', _V_.proxy(this, this.adsXdrListener));
+		}
+		
+		this.player.xdr.src(_v.src);
+	},
+
+	adsXdrListener : function (event) {
+		var _v = this.player.values;
+		
+		if (window.addEventListener) {
+			window.removeEventListener('message', _V_.proxy (this, this.adsXdrListener), false);
+		} else {
+			window.dettachEvent('onmessage', _V_.proxy(this, this.adsXdrListener));
+		}
+		
+		if (!this.player.xdr)
+			return;
+		
+		this.constructAdList( this.xml2Doc(event.data) );
+	},
+
+	// Loading ads data from defined server
+	adsRequest : function (adObj) {
+		var _v = this.player.values;
+		try {
+			//constructing list for further populating and sorting
+			for (v in adObj.schedule) {
+				switch (adObj.schedule[v].position) {
+					
+					case "pre-roll":
+						var a = this.adSlot("pre-roll",0);
+						_v.adList.push(a);
+						break;
+					
+					case "mid-roll":
+						var a = this.adSlot("mid-roll", this.convertTimeFormat(adObj.schedule[v].startTime));
+						_v.adList.push(a);
+						break;
+					
+					case "post-roll":
+						var a = this.adSlot("post-roll",0);
+						_v.adList.push(a);
+						break;
+					
+					/*
+					case "auto:bottom":
+						var a = this.adSlot("auto:bottom", this.convertTimeFormat(adObj.schedule[v].startTime));
+						_v.adList.push(a);
+						break;
+					*/
+					
+					default:
+						break;
+				}
+			}
+			this.player.addEvent("canplay", _V_.proxy(this, this.setPostRollTime));
+			this.player.load();
+			
+			try {
+				_v.src = _V_.getAbsoluteURL(adObj.servers[0]["apiAddress"]);
+				_V_.getXML(_v.src, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
+			} catch (e) { _v.src = ''; }
+			
+		} catch(e) {}
+	},
+
+	slotForCurrentTime : function (currentTime) {
+		var _v = this.player.values;
+		for (v in _v.adList) { 
+			if (!_v.adList[v].seen) {
+				if (_v.adList[v].time == currentTime) {
+					return _v.adList[v];
+				}
+			}
+		}
+		return null;
+	},
+
+	showSlot : function (slot) {
+		var _v = this.player.values;
+		try {
+			if (slot.source) {
+				this.player.src(slot.source);
+				this.player.load();
+				this.player.play();
+				_v.currentSlot = slot;
+				this.player.addEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
+				return;
+			}
+		} catch (e) {}
+		this.resumePlayBackAfterSlotShow();
+	},
+
+	enforcePrecision : function (n, nDecimalDigits) {
+		return +(n).toFixed(nDecimalDigits);
+	},
+
+	setPostRollTime : function () {
+		var _v = this.player.values;
+		this.player.removeEvent("canplay", _V_.proxy(this, this.setPostRollTime));
+		for (v in _v.adList) {
+			if (_v.adList[v].type == "post-roll") {
+				_v.adList[v].time = Math.floor(this.player.duration());
+			}
+		}
+	},
+
+	// @event
+	showAdSlots : function () {
+		var _v = this.player.values;
+		var slot = this.slotForCurrentTime(Math.floor(_v.currentTime));
+		if (slot) {
+			slot.seen = true;
+			_v.tempTime = _v.currentTime;
+			this.player.removeEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
+			
+			this.showSlot(slot);
+			
+			// pixel-events
+			this.onImpression();
+			this.onStart();
+			
+			//activate click
+			if (this.player.clickLink)
+				this.player.clickLink.show();
+			
+			if (slot.events && (slot.events['firstQuartile'] || slot.events['midPoint'] || slot.events['thirdQuartile']))
+				_v.isTimeEvents = 1;
+				this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
+		}
+	},
+
+	// @event
+	resumePlayBackAfterSlotShow : function () {
+		var _v =  this.player.values;
+		
+		this.player.removeEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
+		if (_v.isTimeEvents)
+			_v.isTimeEvents = 0;
+			this.player.removeEvent('timeupdate', _V_.proxy(this, this.callSlotEvents));
+		// pixel-event
+		this.onComplete();
+		
+		_v.currentSlot = null;
+		this.player.src(_v.mainTrack);
+		this.player.load();
+		this.player.play();
+		
+		if (this.player.readyState !== 4) { //HAVE_ENOUGH_DATA
+			var _f =  _V_.proxy(this, this.seekToOriginalPoint);
+			this.player.addEvent('canplaythrough', _f);
+			this.player.addEvent('loadeddata', _f);
+			this.player.addEvent('loadedmetadata', _f);
+			this.player.pause();
+		}
+	},
+
+	// @event
+	seekToOriginalPoint: function () {
+		var _v = this.player.values;
+		var _f =  _V_.proxy(this, this.seekToOriginalPoint);
+		this.player.removeEvent('canplaythrough', _f);
+		this.player.removeEvent('loadeddata', _f);
+		this.player.removeEvent('loadedmetadata', _f);
+		_v.currentTime = this.enforcePrecision(_v.tempTime,1);
+		this.player.play();
+		this.player.addEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
+	},
+
+	// @event
+	callSlotEvents : function () {
+		var _v = this.player.values;
+		
+		try {
+			var currentTime = Math.floor(_v.currentTime);
+			var duration = this.player.duration();
+			
+			if (this.player.skipAdButton && _v.skipAd && currentTime == _v.skipAd) {
+				this.player.skipAdButton.show();
+			}
+			
+			if (Math.floor(0.25 * duration) == currentTime) {
+				this.onFirstQuartile();
+				return;
+			}
+			if (Math.floor(0.5 * duration) == currentTime) {
+				this.onMidPoint();
+				return;
+			}
+			if (Math.floor(0.75 * duration) == currentTime) {
+				this.onThirdQuartile();
+				return;
+			}
+		} catch (e) {
+		    console.log(e);
+		}
+	},
+
+	/* @pixel-events */
+	onImpression : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.impression,  _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	onCreativeView : function () {
+		var _v = this.player.values;
+	},
+
+	onStart : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['start'],  _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	onFirstQuartile : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['firstquartile'],  _V_.proxy(this, this.callEvent));
+			// to avoid multiple call
+			_v.currentSlot.events['firstquartile'] = [];
+		} catch (e) {}
+	},
+
+	onMidPoint : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['midpoint'],  _V_.proxy(this, this.callEvent));
+			// to avoid multiple call
+			_v.currentSlot.events['midpoint'] = [];
+		} catch (e) {}
+	},
+
+	onThirdQuartile : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['thirdquartile'],  _V_.proxy(this, this.callEvent));
+			// to avoid multiple call
+			_v.currentSlot.events['thirdquartile'] = [];
+		} catch (e) {}
+	},
+
+	onComplete : function () {
+		var _v = this.player.values;
+		try {
+			if (this.player.skipAdButton)
+				this.player.skipAdButton.hide()
+			if (this.player.clickLink)
+				this.player.clickLink.hide();
+			_V_.each(_v.currentSlot.events['complete'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	onSkip : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['skip'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+		this.resumePlayBackAfterSlotShow();
+	}
+});
+
