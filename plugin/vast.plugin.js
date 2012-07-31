@@ -3,56 +3,6 @@
     by P.Frolov
 */
 
-_V_.extend({
-  getXML: function (url, onSuccess, onError) {
-    // if (netscape.security.PrivilegeManager.enablePrivilege) {
-    //   netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-    // }
-
-    var local = (url.indexOf("file:") == 0 || (window.location.href.indexOf("file:") == 0 && url.indexOf("http:") == -1));
-
-    if (typeof XMLHttpRequest == "undefined") {
-      XMLHttpRequest = function () {
-        try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) {}
-        try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (f) {}
-        try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (g) {}
-        throw new Error("This browser does not support XMLHttpRequest.");
-      };
-    }
-
-    var request = new XMLHttpRequest();
-
-    try {
-      request.open("GET", url);
-    } catch(e) {
-      _V_.log("VideoJS XMLHttpRequest (open)", e);
-      // onError(e);
-      return false;
-    }
-
-    request.onreadystatechange = _V_.proxy(this, function () {
-      if (request.readyState == 4) {
-        if (request.status == 200 || local && request.status == 0) {
-          onSuccess(request.responseXML);
-        } else {
-          if (onError) {
-            onError();
-          }
-        }
-      }
-    });
-
-    try {
-      request.send();
-    } catch(e) {
-      _V_.log("VideoJS XMLHttpRequest (send)", e);
-      if (onError) {
-        onError(e);
-      }
-    }
-  }
-});
-
 // cross-domain request by postMesage
 _V_.options.components['xdr'] = {};
 
@@ -367,6 +317,9 @@ _V_.Vast = _V_.Component.extend({
 	},
 
 	xml2Doc : function (string) {
+		if (!string)
+			return false;
+		
 		var message = "";
 		if (window.DOMParser) { // all browsers, except IE before version 9
 			var parser = new DOMParser();
@@ -414,8 +367,8 @@ _V_.Vast = _V_.Component.extend({
 		return xmlDoc;
 	},
 
-	adsReady : function (responseObj) {
-		this.constructAdList (responseObj);
+	adsReady : function (string) {
+		this.constructAdList ( this.xml2Doc(string) );
 	},
 
 	adsError : function (error) {
@@ -487,7 +440,7 @@ _V_.Vast = _V_.Component.extend({
 			
 			try {
 				_v.src = _V_.getAbsoluteURL(adObj.servers[0]["apiAddress"]);
-				_V_.getXML(_v.src, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
+				_V_.get(_v.src, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
 			} catch (e) { _v.src = ''; }
 			
 		} catch(e) {}
