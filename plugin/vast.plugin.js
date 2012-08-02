@@ -490,10 +490,10 @@ _V_.Vast = _V_.Component.extend({
 	// @event
 	showAdSlots : function () {
 		var _v = this.player.values;
-		var slot = this.slotForCurrentTime(Math.floor(_v.currentTime));
+		var slot = this.slotForCurrentTime(Math.floor(this.player.currentTime()));
 		if (slot) {
 			slot.seen = true;
-			_v.tempTime = _v.currentTime;
+			_v.tempTime = this.player.currentTime();
 			this.player.removeEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
 			
 			this.showSlot(slot);
@@ -508,7 +508,7 @@ _V_.Vast = _V_.Component.extend({
 			
 			if (slot.events && (slot.events['firstQuartile'] || slot.events['midPoint'] || slot.events['thirdQuartile']))
 				_v.isTimeEvents = 1;
-				this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
+			this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
 		}
 	},
 
@@ -544,7 +544,7 @@ _V_.Vast = _V_.Component.extend({
 		this.player.removeEvent('canplaythrough', _f);
 		this.player.removeEvent('loadeddata', _f);
 		this.player.removeEvent('loadedmetadata', _f);
-		_v.currentTime = this.enforcePrecision(_v.tempTime,1);
+		this.player.currentTime( this.enforcePrecision(_v.tempTime,1) );
 		this.player.play();
 		this.player.addEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
 	},
@@ -554,7 +554,7 @@ _V_.Vast = _V_.Component.extend({
 		var _v = this.player.values;
 		
 		try {
-			var currentTime = Math.floor(_v.currentTime);
+			var currentTime = Math.floor(this.player.currentTime());
 			var duration = this.player.duration();
 			
 			if (this.player.skipAdButton && _v.skipAd && currentTime == _v.skipAd) {
@@ -574,7 +574,7 @@ _V_.Vast = _V_.Component.extend({
 				return;
 			}
 		} catch (e) {
-		    console.log(e);
+		    //console.log(e);
 		}
 	},
 
