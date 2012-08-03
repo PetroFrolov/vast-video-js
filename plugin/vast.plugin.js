@@ -133,7 +133,7 @@ _V_.ClickLink = _V_.Component.extend({
 	onClick: function () {
 		var _v = this.player.values;
 		try {
-			_V_.each(_v.currentSlot.clickEvents['skip'], _V_.proxy(this, this.callEvent));
+			_V_.each(_v.currentSlot.clickEvents, _V_.proxy(this, this.player.vast.callEvent));
 		} catch (e) {}
 	}
 });
@@ -550,8 +550,6 @@ _V_.Vast = _V_.Component.extend({
 		
 		this.player.removeEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
 		this.player.removeEvent('timeupdate', _V_.proxy(this, this.callSlotEvents));
-		// pixel-event
-		this.onComplete();
 		
 		_v.currentSlot = null;
 		this.player.src(_v.mainTrack);
@@ -603,6 +601,10 @@ _V_.Vast = _V_.Component.extend({
 			}
 			if (Math.floor(0.75 * duration) == currentTime) {
 				this.onThirdQuartile();
+				return;
+			}
+			if (Math.floor(duration) == currentTime) {
+				this.onComplete();
 				return;
 			}
 		} catch (e) {
