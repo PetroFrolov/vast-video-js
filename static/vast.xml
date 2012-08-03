@@ -73,7 +73,7 @@
 <TrackingEvents>
 <Tracking event="creativeView"><![CDATA[../static/clear_dot.gif?createView]]></Tracking>
 <Tracking event="start"><![CDATA[../static/clear_dot.gif?start]]></Tracking>
-<Tracking event="firstQuartile"><![CDATA[..static/clear_dot.gif?firstQuartile]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[../static/clear_dot.gif?firstQuartile]]></Tracking>
 <Tracking event="midpoint"><![CDATA[../static/clear_dot.gif?midpoint]]></Tracking>
 <Tracking event="thirdQuartile"><![CDATA[../static/clear_dot.gif?thirdQuartile]]></Tracking>
 <Tracking event="complete"><![CDATA[../static/clear_dot.gif?complete]]></Tracking>
