@@ -476,11 +476,42 @@ _V_.Vast = _V_.Component.extend({
 				this.player.load();
 				this.player.play();
 				_v.currentSlot = slot;
-				this.player.addEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
+				
+				if (this.player.readyState !== 4) { //HAVE_ENOUGH_DATA
+					var _f =  _V_.proxy(this, this.afterSlotDataLoaded);
+					this.player.addEvent('canplaythrough', _f);
+					this.player.addEvent('canplay', _f);
+					this.player.addEvent('loadeddata', _f);
+					this.player.addEvent('loadedmetadata', _f);
+					this.player.pause();
+				}
 				return;
 			}
 		} catch (e) {}
 		this.resumePlayBackAfterSlotShow();
+	},
+
+	afterSlotDataLoaded : function () {
+		var _v = this.player.values;
+		var _f =  _V_.proxy(this, this.afterSlotDataLoaded);
+		this.player.removeEvent('canplaythrough', _f);
+		this.player.removeEvent('canplay', _f);
+		this.player.removeEvent('loadeddata', _f);
+		this.player.removeEvent('loadedmetadata', _f);
+		this.player.play();
+		
+		// pixel-events
+		this.onImpression();
+		this.onStart();
+			
+		//activate click
+		if (this.player.clickLink)
+			this.player.clickLink.show();
+		
+		//time events
+		this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
+		
+		this.player.addEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
 	},
 
 	enforcePrecision : function (n, nDecimalDigits) {
@@ -510,17 +541,6 @@ _V_.Vast = _V_.Component.extend({
 			this.player.removeEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
 			
 			this.showSlot(slot);
-			
-			// pixel-events
-			this.onImpression();
-			this.onStart();
-			
-			//activate click
-			if (this.player.clickLink)
-				this.player.clickLink.show();
-			
-			//time events
-			this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
 		}
 	},
 
