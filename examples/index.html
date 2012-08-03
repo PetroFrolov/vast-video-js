@@ -15,7 +15,7 @@
 </video>
 
 <script type="text/javascript">
-    _V_("video", {
+    var options = {
 	ads: {
 	    'skipAd': {
 		'enabled': true,
@@ -29,14 +29,16 @@
 	    ], 
 	    'schedule' : [
 		{
-		    'position' : 'pre-roll'
+		    'position' : 'mid-roll',
+		    'startTime': '00:00:07'
 		},
 		{
 		    'position' : 'post-roll'
 		}
 	    ]
 	}
-    });
+    };
+    _V_("video", options);
 </script>
 
 </body></html>

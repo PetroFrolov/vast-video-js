@@ -174,9 +174,17 @@ _V_.Vast = _V_.Component.extend({
 		_v.mainTrack = _v.src;
 		_v.currentSlot = null;
 		_v.skipAd = 0;
-		_v.src = '';
+		_v.api = '';
+		
+		
 		
 		try {
+			//change source fo itself for events fireing: http://dev.opera.com/articles/view/consistent-event-firing-with-html5-video/
+			if (window.opera) {
+				this.player.src(_v.src);
+				this.player.load();
+			}
+		
 		    if (options.ads.skipAd.enabled)
 			_v.skipAd = options.ads.skipAd.timeOut || 3;
 		} catch (e) {}
@@ -197,7 +205,6 @@ _V_.Vast = _V_.Component.extend({
 		a.events = {};
 		a.link = "";
 		a.clickEvents = [];
-		a.isTimeEvents = 0;
 		
 		return a;
 	},
@@ -383,7 +390,7 @@ _V_.Vast = _V_.Component.extend({
 			window.attachEvent('onmessage', _V_.proxy(this, this.adsXdrListener));
 		}
 		
-		this.player.xdr.src(_v.src);
+		this.player.xdr.src(_v.api);
 	},
 
 	adsXdrListener : function (event) {
@@ -420,7 +427,7 @@ _V_.Vast = _V_.Component.extend({
 						break;
 					
 					case "post-roll":
-						var a = this.adSlot("post-roll",0);
+						var a = this.adSlot("post-roll",-1);
 						_v.adList.push(a);
 						break;
 					
@@ -435,13 +442,16 @@ _V_.Vast = _V_.Component.extend({
 						break;
 				}
 			}
+			this.player.addEvent("canplaytrough", _V_.proxy(this, this.setPostRollTime));
 			this.player.addEvent("canplay", _V_.proxy(this, this.setPostRollTime));
+			this.player.addEvent("loadeddata", _V_.proxy(this, this.setPostRollTime));
+			this.player.addEvent("loadedmetadata", _V_.proxy(this, this.setPostRollTime));
 			this.player.load();
 			
 			try {
-				_v.src = _V_.getAbsoluteURL(adObj.servers[0]["apiAddress"]);
-				_V_.get(_v.src, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
-			} catch (e) { _v.src = ''; }
+				_v.api = _V_.getAbsoluteURL(adObj.servers[0]["apiAddress"]);
+				_V_.get(_v.api, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
+			} catch (e) { _v.api = ''; }
 			
 		} catch(e) {}
 	},
@@ -479,7 +489,10 @@ _V_.Vast = _V_.Component.extend({
 
 	setPostRollTime : function () {
 		var _v = this.player.values;
+		this.player.removeEvent("canplaytrough", _V_.proxy(this, this.setPostRollTime));
 		this.player.removeEvent("canplay", _V_.proxy(this, this.setPostRollTime));
+		this.player.removeEvent("loadeddata", _V_.proxy(this, this.setPostRollTime));
+		this.player.removeEvent("loadedmetadata", _V_.proxy(this, this.setPostRollTime));
 		for (v in _v.adList) {
 			if (_v.adList[v].type == "post-roll") {
 				_v.adList[v].time = Math.floor(this.player.duration());
@@ -506,8 +519,7 @@ _V_.Vast = _V_.Component.extend({
 			if (this.player.clickLink)
 				this.player.clickLink.show();
 			
-			if (slot.events && (slot.events['firstQuartile'] || slot.events['midPoint'] || slot.events['thirdQuartile']))
-				_v.isTimeEvents = 1;
+			//time events
 			this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
 		}
 	},
@@ -517,9 +529,7 @@ _V_.Vast = _V_.Component.extend({
 		var _v =  this.player.values;
 		
 		this.player.removeEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
-		if (_v.isTimeEvents)
-			_v.isTimeEvents = 0;
-			this.player.removeEvent('timeupdate', _V_.proxy(this, this.callSlotEvents));
+		this.player.removeEvent('timeupdate', _V_.proxy(this, this.callSlotEvents));
 		// pixel-event
 		this.onComplete();
 		
@@ -531,6 +541,7 @@ _V_.Vast = _V_.Component.extend({
 		if (this.player.readyState !== 4) { //HAVE_ENOUGH_DATA
 			var _f =  _V_.proxy(this, this.seekToOriginalPoint);
 			this.player.addEvent('canplaythrough', _f);
+			this.player.addEvent('canplay', _f);
 			this.player.addEvent('loadeddata', _f);
 			this.player.addEvent('loadedmetadata', _f);
 			this.player.pause();
@@ -542,6 +553,7 @@ _V_.Vast = _V_.Component.extend({
 		var _v = this.player.values;
 		var _f =  _V_.proxy(this, this.seekToOriginalPoint);
 		this.player.removeEvent('canplaythrough', _f);
+		this.player.removeEvent('canplay', _f);
 		this.player.removeEvent('loadeddata', _f);
 		this.player.removeEvent('loadedmetadata', _f);
 		this.player.currentTime( this.enforcePrecision(_v.tempTime,1) );
