@@ -511,7 +511,14 @@ _V_.Vast = _V_.Component.extend({
 		//time events
 		this.player.addEvent('timeupdate',  _V_.proxy(this, this.callSlotEvents));
 		
+		this.player.addEvent('volumechange', _V_.proxy(this, this.onMute));
+		this.player.addEvent('play', _V_.proxy(this, this.onPause));
+		this.player.addEvent('pause', _V_.proxy(this, this.onPause));
+		this.player.addEvent('fullscreenchange', _V_.proxy(this, this.onFullscreen));
+		
 		this.player.addEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
+		
+		
 	},
 
 	enforcePrecision : function (n, nDecimalDigits) {
@@ -549,7 +556,13 @@ _V_.Vast = _V_.Component.extend({
 		var _v =  this.player.values;
 		
 		this.player.removeEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
+		
 		this.player.removeEvent('timeupdate', _V_.proxy(this, this.callSlotEvents));
+		
+		this.player.removeEvent('volumechange', _V_.proxy(this, this.onMute));
+		this.player.removeEvent('play', _V_.proxy(this, this.onPause));
+		this.player.removeEvent('pause', _V_.proxy(this, this.onPause));
+		this.player.removeEvent('fullscreenchange', _V_.proxy(this, this.onFullscreen));
 		
 		_v.currentSlot = null;
 		this.player.src(_v.mainTrack);
@@ -620,6 +633,7 @@ _V_.Vast = _V_.Component.extend({
 		} catch (e) {}
 	},
 
+	//TODO
 	onCreativeView : function () {
 		var _v = this.player.values;
 	},
@@ -669,12 +683,85 @@ _V_.Vast = _V_.Component.extend({
 		} catch (e) {}
 	},
 
+	onMute : function () {
+		var _v = this.player.values;
+		if (this.player.muted()) {
+			if (_v.isMuted)
+				return; //already muted
+			_v.isMuted = true;
+		} else {
+			if (!_v.isMuted)
+				return; //already unmuted
+			_v.isMuted = false;
+		}
+		try {
+			_V_.each( _v.isMuted? _v.currentSlot.events['mute'] : _v.currentSlot.events['unmute'] , _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	onPause : function () {
+		var _v = this.player.values;
+		if (this.player.paused()) {
+			if (_v.isPaused)
+				return; //already paused
+			_v.isPaused = true;
+		} else {
+			if (!_v.isPaused)
+				return; //already resumed
+			_v.isPaused = false;
+		}
+		try {
+			_V_.each(_v.isPaused? _v.currentSlot.events['pause'] : _v.currentSlot.events['resume'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	//TODO
+	onRewind : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each( _v.currentSlot.events['rewind'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	onFullscreen : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(this.player.isFullScreen ? _v.currentSlot.events['fullscreen'] : _v.currentSlot.events['exitfullscreen'], _V_.proxy(this, this.callEvent));
+			_V_.each(this.player.isFullScreen ? _v.currentSlot.events['expand'] : _v.currentSlot.events['collapse'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	//TODO
+	onAcceptInvitation : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['acceptinvitation'] , _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
+	//TODO
+	onClose : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['close'] , _V_.proxy(this, this.callEvent));
+		} catch (e) {}
+	},
+
 	onSkip : function () {
 		var _v = this.player.values;
 		try {
 			_V_.each(_v.currentSlot.events['skip'], _V_.proxy(this, this.callEvent));
 		} catch (e) {}
 		this.resumePlayBackAfterSlotShow();
+	},
+
+	//TODO
+	onProgress : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.events['progress'], _V_.proxy(this, this.callEvent));
+		} catch (e) {}
 	}
+
 });
 
