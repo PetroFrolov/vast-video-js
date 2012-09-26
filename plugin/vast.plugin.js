@@ -76,6 +76,8 @@ _V_.SkipAdButton = _V_.Button.extend({
 	onClick: function () {
 		if (this.player.vast)
 			this.player.vast.onSkip();
+		else
+			this.hide();
 	}
 });
 
@@ -131,10 +133,10 @@ _V_.ClickLink = _V_.Component.extend({
 	},
 
 	onClick: function () {
-		var _v = this.player.values;
-		try {
-			_V_.each(_v.currentSlot.clickEvents, _V_.proxy(this, this.player.vast.callEvent));
-		} catch (e) {}
+		if (this.player.vast)
+			this.player.vast.onClick();
+		else
+			this.hide();
 	}
 });
 
@@ -175,8 +177,7 @@ _V_.Vast = _V_.Component.extend({
 		_v.currentSlot = null;
 		_v.skipAd = 0;
 		_v.api = '';
-		
-		
+		_v.paused = false;
 		
 		try {
 			//change source fo itself for events fireing: http://dev.opera.com/articles/view/consistent-event-firing-with-html5-video/
@@ -476,6 +477,7 @@ _V_.Vast = _V_.Component.extend({
 				this.player.load();
 				this.player.play();
 				_v.currentSlot = slot;
+				_v.paused = false;
 				
 				if (this.player.readyState !== 4) { //HAVE_ENOUGH_DATA
 					var _f =  _V_.proxy(this, this.afterSlotDataLoaded);
@@ -576,6 +578,8 @@ _V_.Vast = _V_.Component.extend({
 			this.player.addEvent('loadeddata', _f);
 			this.player.addEvent('loadedmetadata', _f);
 			this.player.pause();
+		} else if (_v.paused) {
+			this.player.pause();
 		}
 	},
 
@@ -588,7 +592,11 @@ _V_.Vast = _V_.Component.extend({
 		this.player.removeEvent('loadeddata', _f);
 		this.player.removeEvent('loadedmetadata', _f);
 		this.player.currentTime( this.enforcePrecision(_v.tempTime,1) );
-		this.player.play();
+		if (_v.paused) {
+			_v.paused = false;
+		} else {
+			this.player.play();
+		}
 		this.player.addEvent('timeupdate', _V_.proxy(this, this.showAdSlots));
 	},
 
@@ -752,6 +760,12 @@ _V_.Vast = _V_.Component.extend({
 		try {
 			_V_.each(_v.currentSlot.events['skip'], _V_.proxy(this, this.callEvent));
 		} catch (e) {}
+		
+		if (this.player.skipAdButton)
+			this.player.skipAdButton.hide();
+		if (this.player.clickLink)
+			this.player.clickLink.hide();
+		
 		this.resumePlayBackAfterSlotShow();
 	},
 
@@ -761,6 +775,21 @@ _V_.Vast = _V_.Component.extend({
 		try {
 			_V_.each(_v.currentSlot.events['progress'], _V_.proxy(this, this.callEvent));
 		} catch (e) {}
+	},
+
+	onClick : function () {
+		var _v = this.player.values;
+		try {
+			_V_.each(_v.currentSlot.clickEvents, _V_.proxy(this, this.player.vast.callEvent));
+		} catch (e) {}
+		
+		if (this.player.skipAdButton)
+			this.player.skipAdButton.hide();
+		if (this.player.clickLink)
+			this.player.clickLink.hide();
+		
+		_v.paused = true;
+		this.resumePlayBackAfterSlotShow();
 	}
 
 });
