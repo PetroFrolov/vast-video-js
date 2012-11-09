@@ -243,12 +243,22 @@ _V_.Vast = _V_.Component.extend({
 					for (var k = 0, kl = mediaFile.length; k < kl; ++k) {
 						try {
 							type = mediaFile[k].getAttribute('type').toLowerCase();
+							if (type == 'video/x-mp4') {
+								type = "video/mp4";
+							}
+
 							if (!video.canPlayType || !video.canPlayType(type).replace(/no/, ''))
 								continue;
 							for (var l = 0, ll = mediaFile[k].childNodes.length; l < ll; ++l) {
-								var data = mediaFile[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
-								if (!data)
+								var data = null;
+								if (mediaFile[k].childNodes[l].data && mediaFile[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '').length > 0) {
+									data = mediaFile[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+								} else if (mediaFile[k].childNodes[l].childNodes[0]) {
+									data = mediaFile[k].childNodes[l].childNodes[0].data.replace(/^\s+/,'').replace(/\s+$/, '');
+								}
+								if (!data || data.length == 0) {
 									continue;
+								}
 								_v.adList[a].source = data;
 								_v.adList[a].mime = type;
 								break mediaFound;
@@ -265,7 +275,13 @@ _V_.Vast = _V_.Component.extend({
 						if (!event)
 							continue;
 						for (var l = 0, ll = tracking[k].childNodes.length; l < ll; ++l) {
-							var data = tracking[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							var data = null;
+							if (tracking[k].childNodes[l].data && tracking[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '').length > 0) {
+								data = tracking[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							} else if (tracking[k].childNodes[l] && tracking[k].childNodes[l].childNodes[0] && tracking[k].childNodes[l].childNodes[0].data && tracking[k].childNodes[l].childNodes[0].data.replace(/^\s+/,'').replace(/\s+$/, '')) {
+								data = tracking[k].childNodes[l].childNodes[0].data.replace(/^\s+/,'').replace(/\s+$/, '');
+							}
+								
 							if (!data)
 								continue;
 							if (!_v.adList[a].events[event.toLowerCase()])
@@ -280,7 +296,12 @@ _V_.Vast = _V_.Component.extend({
 					videoClicks = adElements[a].getElementsByTagName("VideoClicks")[0];
 					clickThrough = videoClicks.getElementsByTagName("ClickThrough")[0];
 					for (var k = 0, kl = clickThrough.childNodes.length; k < kl; ++k) {
-						var data = clickThrough.childNodes[k].data.replace(/^\s+/,'').replace(/\s+$/, '');
+						var data = null;
+						if (clickThrough.childNodes[k].data && clickThrough.childNodes[k].data.replace(/^\s+/,'').replace(/\s+$/, '').length > 0) {						
+							data = clickThrough.childNodes[k].data.replace(/^\s+/,'').replace(/\s+$/, '');
+						} else if (clickThrough.childNodes[k].childNodes[0] && clickThrough.childNodes[k].childNodes[0].data && clickThrough.childNodes[k].childNodes[0].data.replace(/^\s+/,'').replace(/\s+$/, '').length > 0) {
+							data = clickThrough.childNodes[k].childNodes[0].data.replace(/^\s+/,'').replace(/\s+$/, '');
+						}
 						if (!data)
 							continue;
 						if (data.toUpperCase().indexOf('HTTP://') != 0 && data.toUpperCase().indexOf('HTTPS://') != 0)
