@@ -153,10 +153,54 @@ _V_.Vast = _V_.Component.extend({
 	},
 	
 	createElement: function (type, attrs) {
-		if(this.player.tech.el.localName === 'video') {
+		if (this.player.tech.el.localName === 'video') {
 			return this._super(type, attrs);
 		}
 		return document.createElement('span');
+	},
+	
+	canPlay: function (ext, type) {
+		
+		try {
+			if (!ext && !type)
+				return false;
+		
+			if (type == 'video/x-mp4')
+				type = 'video/mp4';
+			
+			if (this.player.techName == 'html5') {
+				types = {
+					'mp4'  : 'video/mp4',
+					'webm' : 'video/webm',
+					'ogv'  : 'video/ogg',
+					'flv'  : 'video/flv'
+				}
+				if (!type && types.hasOwnProperty(ext.toLowerCase()))
+					type = types[ext.toLowerCase()];
+				
+				video = this.player.tech.el;
+				return video.canPlayType && video.canPlayType(type).replace(/no/, '');
+			
+			} else if (this.player.techName == 'flash') {
+				types = {
+					'video/mp4' : true,
+					'video/flv' : true
+				}
+				exts = {
+					'mp4' : true,
+					'flv' : true
+				}
+				if (type) {
+					return types.hasOwnProperty(type.toLowerCase());
+				} else {
+					return exts.hasOwnProperty(ext.toLowerCase());
+				}
+			}
+			return false;
+			
+		} catch (e) {}
+		
+		return false;
 	},
 	
 	initAds : function () {
@@ -217,7 +261,7 @@ _V_.Vast = _V_.Component.extend({
 
 	constructAdList: function (responseObj) {
 		var _v = this.player.values;
-		var video = document.createElement("video");
+		
 		try {
 			var adElements = responseObj.getElementsByTagName("Ad");
 			var size = _v.adList.length;
@@ -242,13 +286,8 @@ _V_.Vast = _V_.Component.extend({
 					mediaFound:
 					for (var k = 0, kl = mediaFile.length; k < kl; ++k) {
 						try {
-							type = mediaFile[k].getAttribute('type').toLowerCase();
-							if (type == 'video/x-mp4') {
-								type = "video/mp4";
-							}
-
-							if (!video.canPlayType || !video.canPlayType(type).replace(/no/, ''))
-								continue;
+							type = mediaFile[k].getAttribute('type');
+							
 							for (var l = 0, ll = mediaFile[k].childNodes.length; l < ll; ++l) {
 								var data = null;
 								if (mediaFile[k].childNodes[l].data && mediaFile[k].childNodes[l].data.replace(/^\s+/,'').replace(/\s+$/, '').length > 0) {
@@ -259,6 +298,15 @@ _V_.Vast = _V_.Component.extend({
 								if (!data || data.length == 0) {
 									continue;
 								}
+								
+								try {
+									ext = /\.(\w+)$/.exec(data)[1];
+									if (!this.canPlay(ext, type))
+										continue;
+								} catch (e) {
+									continue;
+								}
+								
 								_v.adList[a].source = data;
 								_v.adList[a].mime = type;
 								break mediaFound;
