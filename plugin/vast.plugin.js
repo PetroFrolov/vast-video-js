@@ -178,6 +178,7 @@ _V_.Vast = _V_.Component.extend({
 		_v.skipAd = 0;
 		_v.api = '';
 		_v.paused = false;
+		_v.xdrMethod = '';
 		
 		try {
 			//change source fo itself for events fireing: http://dev.opera.com/articles/view/consistent-event-firing-with-html5-video/
@@ -186,8 +187,8 @@ _V_.Vast = _V_.Component.extend({
 				this.player.load();
 			}
 		
-		    if (options.ads.skipAd.enabled)
-			_v.skipAd = options.ads.skipAd.timeOut || 3;
+			if (options.ads.skipAd.enabled)
+				_v.skipAd = options.ads.skipAd.timeOut || 3;
 		} catch (e) {}
 		
 		//window.counterOfStreams = 0;
@@ -403,16 +404,28 @@ _V_.Vast = _V_.Component.extend({
 	adsError : function (error) {
 		var _v = this.player.values;
 		
-		if (!this.player.xdr)
-			return;
+		if (_v.xdrMethod == "yql") {
+			var protocol = location.protocol,
+				hostname = location.hostname,
+				exRegex = RegExp(protocol + '//' + hostname),
+				query = 'select * from xml where url="' + encodeURI(_v.api) +'"',
+				YQL = 'http' + (/^https/.test(protocol)?'s':'') + '://query.yahooapis.com/v1/public/yql?format=xml&q=' + query;
+			
+			if ( !exRegex.test(_v.api) && /:\/\//.test(_v.api) ) { //external url
+				_V_.get(YQL, _V_.proxy(this, this.adsReady));
+			}
+		} else if (_v.xdrMethod == "xdr") {
+			if (!this.player.xdr)
+				return;
 		
-		if (window.addEventListener) {
-			window.addEventListener('message', _V_.proxy(this, this.adsXdrListener), false);
-		} else {
-			window.attachEvent('onmessage', _V_.proxy(this, this.adsXdrListener));
+			if (window.addEventListener) {
+				window.addEventListener('message', _V_.proxy(this, this.adsXdrListener), false);
+			} else {
+				window.attachEvent('onmessage', _V_.proxy(this, this.adsXdrListener));
+			}
+			
+			this.player.xdr.src(_v.api);
 		}
-		
-		this.player.xdr.src(_v.api);
 	},
 
 	adsXdrListener : function (event) {
@@ -472,6 +485,13 @@ _V_.Vast = _V_.Component.extend({
 			
 			try {
 				_v.api = _V_.getAbsoluteURL(adObj.servers[0]["apiAddress"]);
+				
+				// cross domain method
+				if (adObj.servers[0].hasOwnProperty("xdrMethod")) {
+					if (adObj.servers[0]["xdrMethod"] == "yql" || adObj.servers[0]["xdrMethod"] == "xdr")
+						_v.xdrMethod = adObj.servers[0]["xdrMethod"];
+				}
+				
 				_V_.get(_v.api, _V_.proxy(this, this.adsReady), _V_.proxy(this, this.adsError) );
 			} catch (e) { _v.api = ''; }
 			
