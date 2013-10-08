@@ -11,5 +11,4 @@ Currently in developer use
 See examples/index.html. You should change all paths to real values.
 
 #Supported version of VideoJS
-It works well with v3.
-v4 hasn't supported yet becase VideoJS has some critical bugs.
+Support v4 and back compatible with v3.

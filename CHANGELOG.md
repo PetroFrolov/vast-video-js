@@ -1,3 +1,5 @@
+v0.0.3 2013-10-09
+  * video.js v4 and back compat v3.2
 
 v0.0.2 2013-01-04
   * cross-domain request methods
