@@ -521,12 +521,14 @@ _V_.Vast = _V_.Component.extend({
 				_v.paused = false;
 				
 				if (this.player.readyState !== 4) { //HAVE_ENOUGH_DATA
-					var _f =  _V_.proxy(this, this.afterSlotDataLoaded);
+					var _f =  _V_.proxy(this, this.waitSlotData);
 					this.player.addEvent('canplaythrough', _f);
 					this.player.addEvent('canplay', _f);
 					this.player.addEvent('loadeddata', _f);
 					this.player.addEvent('loadedmetadata', _f);
 					this.player.pause();
+				} else {
+					this.enoughSlotData();
 				}
 				return;
 			}
@@ -534,14 +536,20 @@ _V_.Vast = _V_.Component.extend({
 		this.resumePlayBackAfterSlotShow();
 	},
 
-	afterSlotDataLoaded : function () {
+	waitSlotData : function () {
 		var _v = this.player.values;
-		var _f =  _V_.proxy(this, this.afterSlotDataLoaded);
+		var _f =  _V_.proxy(this, this.waitSlotData);
 		this.player.removeEvent('canplaythrough', _f);
 		this.player.removeEvent('canplay', _f);
 		this.player.removeEvent('loadeddata', _f);
 		this.player.removeEvent('loadedmetadata', _f);
+		
 		this.player.play();
+		this.enoughSlotData();
+	},
+
+	enoughSlotData : function () {
+		var _v = this.player.values;
 		
 		// pixel-events
 		this.onImpression();
@@ -560,7 +568,6 @@ _V_.Vast = _V_.Component.extend({
 		this.player.addEvent('fullscreenchange', _V_.proxy(this, this.onFullscreen));
 		
 		this.player.addEvent('ended', _V_.proxy(this, this.resumePlayBackAfterSlotShow));
-		
 		
 	},
 
