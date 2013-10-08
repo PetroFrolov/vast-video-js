@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<VAST version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Ad id="1">
+	<InLine>
+	    <AdSystem></AdSystem>
+	    <AdTitle></AdTitle>
+	    <Impression>
+	         <![CDATA[../../static/clear_dot.gif?impression]]>
+	    </Impression>
+	    <Creatives>
+		<Creative>
+		    <Linear>
+			<Duration>00:00:30</Duration>
+			<MediaFiles>
+			    <MediaFile delivery="progressive" type="video/mp4" scalable="true" width="" height="">
+				<![CDATA[../../static/pepsi_vs_coca.mp4]]>
+			    </MediaFile>
+			    <MediaFile delivery="progressive" type="video/webm" scalable="true" width="" height="">
+				<![CDATA[../../static/pepsi_vs_coca.webm]]>
+			    </MediaFile>
+			</MediaFiles>
+<TrackingEvents>
+<Tracking event="creativeView"><![CDATA[../../static/clear_dot.gif?createView]]></Tracking>
+<Tracking event="start"><![CDATA[../../static/clear_dot.gif?start]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[../../static/clear_dot.gif?firstQuartile]]></Tracking>
+<Tracking event="midpoint"><![CDATA[../../static/clear_dot.gif?midpoint]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[../../static/clear_dot.gif?thirdQuartile]]></Tracking>
+<Tracking event="complete"><![CDATA[../../static/clear_dot.gif?complete]]></Tracking>
+<Tracking event="skip"><![CDATA[../../static/clear_dot.gif?skip]]></Tracking>
+<Tracking event="mute"><![CDATA[../../static/clear_dot.gif?mute]]></Tracking>
+<Tracking event="unmute"><![CDATA[../../static/clear_dot.gif?unmute]]></Tracking>
+<Tracking event="pause"><![CDATA[../../static/clear_dot.gif?pause]]></Tracking>
+<Tracking event="rewind"><![CDATA[../../static/clear_dot.gif?rewind]]></Tracking>
+<Tracking event="resume"><![CDATA[../../static/clear_dot.gif?resume]]></Tracking>
+<Tracking event="fullscreen"><![CDATA[../../static/clear_dot.gif?fullscreen]]></Tracking>
+<Tracking event="expand"><![CDATA[../../static/clear_dot.gif?expand]]></Tracking>
+<Tracking event="collapse"><![CDATA[../../static/clear_dot.gif?collapse]]></Tracking>
+<Tracking event="acceptInvitation"><![CDATA[../../static/clear_dot.gif?acceptInvitation]]></Tracking>
+<Tracking event="close"><![CDATA[../../static/clear_dot.gif?close]]></Tracking>
+</TrackingEvents>
+			<VideoClicks>
+			    <ClickThrough>
+			         <![CDATA[http://ya.ru/]]>
+			    </ClickThrough>
+			    <ClickTracking>
+				<![CDATA[../../static/clear_dot.gif?click]]>
+			    </ClickTracking>
+			</VideoClicks>
+		    </Linear>
+		</Creative>
+	    </Creatives>
+	</InLine>
+    </Ad>
+    <Ad id="2">
+	<InLine>
+	    <AdSystem></AdSystem>
+	    <AdTitle></AdTitle>
+	    <Impression>
+	         <![CDATA[../../static/clear_dot.gif?impression]]>
+	    </Impression>
+	    <Creatives>
+		<Creative>
+		    <Linear>
+			<Duration>00:00:30</Duration>
+			<MediaFiles>
+			    <MediaFile delivery="progressive" type="video/mp4" scalable="true" width="" height="">
+				<![CDATA[../../static/pepsi_vs_coca.mp4]]>
+			    </MediaFile>
+			    <MediaFile delivery="progressive" type="video/webm" scalable="true" width="" height="">
+				<![CDATA[../../static/pepsi_vs_coca.webm]]>
+			    </MediaFile>
+			</MediaFiles>
+<TrackingEvents>
+<Tracking event="creativeView"><![CDATA[../../static/clear_dot.gif?createView]]></Tracking>
+<Tracking event="start"><![CDATA[../../static/clear_dot.gif?start]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[../../static/clear_dot.gif?firstQuartile]]></Tracking>
+<Tracking event="midpoint"><![CDATA[../../static/clear_dot.gif?midpoint]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[../../static/clear_dot.gif?thirdQuartile]]></Tracking>
+<Tracking event="complete"><![CDATA[../../static/clear_dot.gif?complete]]></Tracking>
+<Tracking event="skip"><![CDATA[../../static/clear_dot.gif?skip]]></Tracking>
+<Tracking event="mute"><![CDATA[../../static/clear_dot.gif?mute]]></Tracking>
+<Tracking event="unmute"><![CDATA[../../static/clear_dot.gif?unmute]]></Tracking>
+<Tracking event="pause"><![CDATA[../../static/clear_dot.gif?pause]]></Tracking>
+<Tracking event="rewind"><![CDATA[../../static/clear_dot.gif?rewind]]></Tracking>
+<Tracking event="resume"><![CDATA[../../static/clear_dot.gif?resume]]></Tracking>
+<Tracking event="fullscreen"><![CDATA[../../static/clear_dot.gif?fullscreen]]></Tracking>
+<Tracking event="expand"><![CDATA[../../static/clear_dot.gif?expand]]></Tracking>
+<Tracking event="collapse"><![CDATA[../../static/clear_dot.gif?collapse]]></Tracking>
+<Tracking event="acceptInvitation"><![CDATA[../../static/clear_dot.gif?acceptInvitation]]></Tracking>
+<Tracking event="close"><![CDATA[../../static/clear_dot.gif?close]]></Tracking>
+</TrackingEvents>
+			<VideoClicks>
+			    <ClickThrough>
+			         <![CDATA[http://ya.ru/]]>
+			    </ClickThrough>
+			    <ClickTracking>
+				<![CDATA[../../static/clear_dot.gif?click]]>
+			    </ClickTracking>
+			</VideoClicks>
+		    </Linear>
+		</Creative>
+	    </Creatives>
+	</InLine>
+    </Ad>
+</VAST>

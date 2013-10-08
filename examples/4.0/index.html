@@ -1,21 +1,24 @@
 <html><head>
-<link href="http://vjs.zencdn.net/c/video-js.css" rel="stylesheet">
-<script src="http://vjs.zencdn.net/c/video.js"></script>
-<!--script src="../plugin/video.3.2.dev.js"></script-->
+<link href="http://vjs.zencdn.net/4.2.1/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/4.2.1/video.js"></script>
+<!--script src="../../plugin/video.dev.js"></script-->
 
-<link href="../plugin/vast.plugin.css" rel="stylesheet">
-<script src="../plugin/4.0/vast.plugin.js"></script>
+<link href="../../plugin/vast.plugin.css" rel="stylesheet" />
+<script src="../../plugin/4.0/vast.plugin.js"></script>
 
 </head><body>
 
 <video id="video" class="video-js vjs-default-skin" controls
   preload="auto" width="640" height="360">
     <source src="http://video-js.zencoder.com/oceans-clip.mp4" type='video/mp4'/>
-    <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm' >
+    <source src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm'/>
 </video>
 
 <script type="text/javascript">
     var options = {
+	plugins: {
+	    vastPlugin: {}
+	},
 	ads: {
 	    'skipAd': {
 		'enabled': true,
@@ -23,7 +26,7 @@
 	    },
 	    'servers'  : [
 		{
-		    'apiAddress': '../static/vast.xml'
+		    'apiAddress': '../../static/vast4.xml'
 		    //'apiAddress' : 'http://some.domain/xdr-redirect/?http://some.domain/xml/vast.xml', //for xdr only
 		    //'xdrMethod': 'yql' //['yql' | 'xdr']
 		}
@@ -38,8 +41,9 @@
 		}
 	    ]
 	}
+	//techOrder : ['flash', 'html5']
     };
-    _V_("video", options);
+    videojs("video", options);
 </script>
 
 </body></html>
