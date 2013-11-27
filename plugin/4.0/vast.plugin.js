@@ -304,6 +304,8 @@
 		_v.api = '';
 		_v.paused = false;
 		_v.xdrMethod = '';
+		_v.visibleControls = this._player.controls();
+		_v.hideContolsDuringAds = options.ads.hideContolsDuringAds || false;
 		
 		try {
 			//change source fo itself for events fireing: http://dev.opera.com/articles/view/consistent-event-firing-with-html5-video/
@@ -686,7 +688,10 @@
 		//activate click
 		if (this._player.clickLink)
 			this._player.clickLink.show();
-		
+	    
+		if (_v.hideContolsDuringAds)
+			this._player.controls(false);
+
 		//time events
 		this._player.on('timeupdate',  this._proxy(this, this.callSlotEvents));
 
@@ -737,9 +742,10 @@
 		this._player.off('play', this._proxy(this, this.onPause));
 		this._player.off('pause', this._proxy(this, this.onPause));
 		this._player.off('fullscreenchange', this._proxy(this, this.onFullscreen));
-		
+
 		_v.currentSlot = null;
 		this._player.src(_v.mainTrack);
+		this._player.controls(_v.visibleControls);
 		this._player.load();
 		this._player.play();
 		
